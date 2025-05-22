@@ -1,5 +1,7 @@
 
 <div class="p-8">
+  <p-confirmDialog></p-confirmDialog>
+
 
   <div class="card">
     <!-- Mensaje de exito -->
@@ -14,30 +16,30 @@
     <span class="text-sm font-medium">{{ errorMessage() }}</span>
 </div>
   <h1 class="text-4xl font-bold mb-6 text-center">
-    Registro de logs 
+    Registro de logs
   </h1>
 <div>
   <h2>Registro de Logs</h2>
   <p-toolbar styleClass="mb-4 gap-2">
                 <ng-template pTemplate="left">
-                    <p-button 
-                        severity="success" 
-                        label="Crear Registro" 
-                        icon="pi pi-plus" 
-                        class="mr-2" 
+                    <p-button
+                        severity="success"
+                        label="Crear Registro"
+                        icon="pi pi-plus"
+                        class="mr-2"
                         (onClick)="openNew()" />
-                        />
+                        
                 </ng-template>
-            
+
                 <ng-template pTemplate="right">
                 </ng-template>
             </p-toolbar>
        </div>
 <!-- Tabla -->
 
-           <p-table 
-                [value]="logsAll()" 
-                [rows]="10" 
+           <p-table
+                [value]="logsAll()"
+                [rows]="10"
                 [paginator]="true"
                 [rowHover]="true"
                 [loading]="loading()"
@@ -45,9 +47,9 @@
                 [tableStyle]="{'min-width': '50rem'}"
                 responsiveLayout="scroll"
                 >
-                
+
                 <ng-template pTemplate="header">
-                    
+
                     <tr>
                         <th style="width: 3rem">
                         <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
@@ -58,12 +60,14 @@
                             ID <p-sortIcon field="nombre" />
                         </th>
                         <th>Method</th>
+                        <th>Code</th>
+
                         <th>Date</th>
                         <th>Acciones</th>
-                        
+
                     </tr>
                 </ng-template>
-                
+
                 <ng-template pTemplate="body" let-log>
                     <tr>
                         <td>
@@ -71,29 +75,30 @@
                         </td>
                         <td>{{log.id}}</td>
                         <td>{{log.method }}</td>
-                        <td>{{log.date || 'sin fecha'}}</td>
+                        <td>{{log.id}}</td>
+                       <td>{{ log.created_at | date:'short' }}</td>
                         <td>
-                            <p-button 
+                            <p-button
                               label="edit"
                              severity="warn"
                              icon="pi pi-check"
-                              iconPos="right" 
+                              iconPos="right"
                               [disabled]="loading()"
                               (click)="edit(log)"
                               class="p-4"
                               />
-                            
+
                             <p-button label="Delete"
                              severity="help"
                              icon="pi pi-check"
-                              iconPos="right" 
+                              iconPos="right"
                               [disabled]="loading()"
-                              (click)="deleteLog(log)"
+                              (click)="confirmDelete(log)"
                               />
                         </td>
                     </tr>
                 </ng-template>
-                
+
                 <ng-template pTemplate="emptymessage">
                     <tr>
                         <td colspan="5" class="text-center p-4">
@@ -119,7 +124,7 @@
 
   <ng-template pTemplate="content">
     <form [formGroup]="formLog" class="space-y-4">
-      
+
       <!-- Campo: Método -->
       <div class="mb-4">
         <label for="method" class="block text-sm font-semibold text-gray-800 mb-1">Nombre</label>
@@ -130,28 +135,45 @@
           formControlName="method"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <small class="p-error" *ngIf="formLog.get('method')?.invalid && formLog.get('method')?.touched">
+        <small class="p-error" 
+        *ngIf="formLog.get('method')?.invalid && formLog.get('method')?.touched">
           El método es requerido.
         </small>
       </div>
 
       <!-- Campo: Datos -->
-      <div class="mb-4">
-        <label for="data" class="block text-sm font-semibold text-gray-800 mb-1">Datos</label>
-        <textarea
-          pInputTextarea
-          id="data"
-          formControlName="data"
-          rows="4"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        ></textarea>
-        <small class="p-error" *ngIf="formLog.get('data')?.invalid && formLog.get('data')?.touched">
-          Los datos son requeridos.
+      
+
+       <div formArrayName="data">
+  <div 
+  *ngFor="let group of dataControls.controls; let i = index"
+   [formGroupName]="i" class="mb-4 border p-2 rounded-md" 
+   class="mb-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <ng-container *ngFor="let key of getGroupKeys(group)">
+      <div class="flex flex-col">
+        <label class="text-sm font-semibold mb-1 capitalize">{{ getLabel(key) }}</label>
+        <input
+          [formControlName]="key"
+          [placeholder]="getPlaceholder(key)"
+          class="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <small class="text-red-500" *ngIf="group.get(key)?.invalid && group.get(key)?.touched">
+          Campo requerido o inválido
         </small>
       </div>
+    </ng-container>
+  </div>
+  </div>
+</div>
+
+<button pButton icon="pi pi-plus" label="Agregar Data" (click)="addData()"></button>
 
     </form>
+
     
+
   </ng-template>
 
   <ng-template pTemplate="footer">
@@ -162,7 +184,6 @@
   </ng-template>
 
 </p-dialog>
-
 
 
 </div>
