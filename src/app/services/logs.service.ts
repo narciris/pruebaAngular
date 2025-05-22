@@ -16,4 +16,7 @@ export class LogsService {
     return this.http.get<LogResponse[]>(`${this.BASE_URL}/logs`)
 
   }
+  delete(id:number):Observable<void>{
+    return this.http.delete<void>(`${this.BASE_URL}/logs/${id}`);
+  }
 }

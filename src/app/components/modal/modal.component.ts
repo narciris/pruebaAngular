@@ -14,6 +14,7 @@ export class ModalComponent {
   
   @Input() visible: boolean = false;
   @Input() title: string='Modal';
+  @Input() mode: 'edit' | 'delete'| 'show' = 'show';
   @Output() close = new EventEmitter<void>();
 
   onHide(){
