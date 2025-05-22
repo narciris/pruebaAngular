@@ -1,77 +1,168 @@
+
 <div class="p-8">
+
+  <div class="card">
+    <!-- Mensaje de exito -->
+    <div *ngIf="successMessage()" class="flex items-center p-4 mb-3 text-green-800 bg-green-100 rounded-lg border border-green-300">
+    <i class="pi pi-check-circle mr-2 text-green-600 text-xl"></i>
+    <span class="text-sm font-medium">{{ successMessage() }}</span>
+</div>
+
+<!-- Mensaje de Error -->
+<div *ngIf="errorMessage()" class="flex items-center p-4 mb-3 text-red-800 bg-red-100 rounded-lg border border-red-300">
+    <i class="pi pi-times-circle mr-2 text-red-600 text-xl"></i>
+    <span class="text-sm font-medium">{{ errorMessage() }}</span>
+</div>
   <h1 class="text-4xl font-bold mb-6 text-center">
     Registro de logs 
   </h1>
+<div>
+  <h2>Registro de Logs</h2>
+  <p-toolbar styleClass="mb-4 gap-2">
+                <ng-template pTemplate="left">
+                    <p-button 
+                        severity="success" 
+                        label="Crear Registro" 
+                        icon="pi pi-plus" 
+                        class="mr-2" 
+                        (onClick)="openNew()" />
+                        />
+                </ng-template>
+            
+                <ng-template pTemplate="right">
+                </ng-template>
+            </p-toolbar>
+       </div>
+<!-- Tabla -->
 
-  <!-- Grid de logs -->
- 
-  <p-table
-  [value]="logs"
-   [paginator]="true"
-   [rows]="6"
-   responsiveLayout="scroll"
-  >
-  <ng-template
-  pTemplate="header"
-  >
-  <tr>
-    <th>method</th>
-    <th>Fecha</th>
-    <th>Data</th>
-    <th>Acciones</th>
-  </tr>
+           <p-table 
+                [value]="logsAll()" 
+                [rows]="10" 
+                [paginator]="true"
+                [rowHover]="true"
+                [loading]="loading()"
+                styleClass="p-datatable-gridlines p-datatable-sm"
+                [tableStyle]="{'min-width': '50rem'}"
+                responsiveLayout="scroll"
+                >
+                
+                <ng-template pTemplate="header">
+                    
+                    <tr>
+                        <th style="width: 3rem">
+                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
 
-  </ng-template>
-  <ng-template pTemplate="body" let-log>
-    <tr>
-      <td>{{log.method}}</td>
-      <td>{{log.date}}</td>
-      <td>data
-        
-      </td>
-      <td>
-        <div class="mt-4">
-       <p-button label="Editar" severity="warn"  class="mr-2"/>
-          <p-button label="Eliminar" severity="danger" />
-        </div>
-       
-      </td>
-    </tr>
-  </ng-template>
+                        <th
+                        pSortableColumn="nombre" style="min-width:15rem">
+                            ID <p-sortIcon field="nombre" />
+                        </th>
+                        <th>Method</th>
+                        <th>Date</th>
+                        <th>Acciones</th>
+                        
+                    </tr>
+                </ng-template>
+                
+                <ng-template pTemplate="body" let-log>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="log" />
+                        </td>
+                        <td>{{log.id}}</td>
+                        <td>{{log.method }}</td>
+                        <td>{{log.date || 'sin fecha'}}</td>
+                        <td>
+                            <p-button 
+                              label="edit"
+                             severity="warn"
+                             icon="pi pi-check"
+                              iconPos="right" 
+                              [disabled]="loading()"
+                              (click)="edit(log)"
+                              class="p-4"
+                              />
+                            
+                            <p-button label="Delete"
+                             severity="help"
+                             icon="pi pi-check"
+                              iconPos="right" 
+                              [disabled]="loading()"
+                              (click)="deleteLog(log)"
+                              />
+                        </td>
+                    </tr>
+                </ng-template>
+                
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5" class="text-center p-4">
+                            <div *ngIf="!loading() && !errorMessage()">
+                                No se encontraron Registros
+                            </div>
+                            <div *ngIf="loading()">
+                                Cargando Registros...
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <!-- Modal -->
+
+<p-dialog [(visible)]="logDialog"
+          [style]="{ width: '500px' }"
+          header="{{ isEdit ? 'Editar Registro' : 'Nuevo Registro' }}"
+          [modal]="true"
+          styleClass="p-fluid"
+          [closable]="false">
+
+  <ng-template pTemplate="content">
+    <form [formGroup]="formLog" class="space-y-4">
+      
+      <!-- Campo: Método -->
+      <div class="mb-4">
+        <label for="method" class="block text-sm font-semibold text-gray-800 mb-1">Nombre</label>
+        <input
+          pInputText
+          id="method"
+          type="text"
+          formControlName="method"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <small class="p-error" *ngIf="formLog.get('method')?.invalid && formLog.get('method')?.touched">
+          El método es requerido.
+        </small>
+      </div>
+
+      <!-- Campo: Datos -->
+      <div class="mb-4">
+        <label for="data" class="block text-sm font-semibold text-gray-800 mb-1">Datos</label>
+        <textarea
+          pInputTextarea
+          id="data"
+          formControlName="data"
+          rows="4"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        ></textarea>
+        <small class="p-error" *ngIf="formLog.get('data')?.invalid && formLog.get('data')?.touched">
+          Los datos son requeridos.
+        </small>
+      </div>
+
+    </form>
     
-  </p-table>
+  </ng-template>
 
-  <!-- Modal -->
-   <app-modal
-   [visible]="showModal"
-   [title]="editar"
-   (closed)="closeModal()"
-   >
-   <div class="p-6">
-    <div class="grid grid-cols-1 sm;grid-cols-2 lg:grid-cols-3 gap-6">
-      <div>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-outlined" (click)="hidenDialog()"></button>
+      <button pButton label="Guardar" icon="pi pi-check" (click)="save()"></button>
+    </div>
+  </ng-template>
 
-      </div>
-    </div>
-   </div>
-  
-  </app-modal>
- <!-- <app-modal
-  [visible]="showPostModal"
-  [title]="'Post del usuario'"
-  (close)="closeModal()"
->
-  <div class="p-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let p of post">
-        <p-card header="{{ p.title }}" class="h-full">
-          <ng-template pTemplate="content">
-            <p>{{ p.body }}</p> 
-          </ng-template>
-        </p-card>
-      </div>
-    </div>
-  </div>
-</app-modal> -->
+</p-dialog>
+
+
 
 </div>
